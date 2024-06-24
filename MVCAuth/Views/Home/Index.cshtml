@@ -15,8 +15,15 @@
 	<div class="form-group">
 		<label for="searchName">Search by Name:</label>
 		<input type="text" class="form-control" id="searchName" placeholder="Enter name" required>
-		<small id="searchMessage" class="text-danger"></small>
+		@* <small id="searchMessage" class="text-danger"></small> *@
 	</div>
+
+	<div class="row mt-3">
+		<div class="col-md-6 offset-md-3">
+			<div id="searchMessage" class="text-danger"></div>
+		</div>
+	</div>
+
 	<button type="button" class="btn btn-primary" onclick="searchByName()">Search</button>
 	<br /><br />
 
@@ -34,23 +41,18 @@
 
 		<tbody class="tbody">
 			<!-- Employee records will be populated here -->
+
 		</tbody>
-
-
 	</table>
-</div>
-
-	
-<!-- Toast container Add Update Delete-->
-<div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true">
-	<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="true" data-delay="3000">
-		<div class="toast-header">
-			<strong class="mr-auto"></strong>
-			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
-			</button>
-		</div>	
-		<div class="toast-body"></div>
+	<!-- Pagination controls -->
+	<div class="container">
+		<div class="row mt-3">
+			<div class="col-md-6 offset-md-3">
+				<nav aria-label="Page navigation example">
+					<ul class="pagination justify-content-end"></ul>
+				</nav>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -114,62 +116,109 @@
 				<label id="labelToUpdateSalary" style="display: block; text-align: center;"></label><br />
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-danger" id="btnDelete" onclick="return Delete();">Delete</button>
-				<button type="button" class="btn btn-danger" onclick="CloseAddEditEmployeeModal()">Close</button>
+				<button type="button" class="btn btn-danger" id="btnDelete" onclick="return Delete();">Yes</button>
+				<button type="button" class="btn btn-secondary" onclick="CloseAddEditEmployeeModal()">Close</button>
 			</div>
 		</div>
 	</div>
 </div>
  
 
-
-	
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins and AJAX) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<!-- Bootstrap JS -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
-
-
-
 @section Scripts
 {
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 
 	<script>
+			toastr.options = {
+				"closeButton": true,
+				"debug": false,
+				"newestOnTop": false,
+				"progressBar": true,
+				"positionClass": "toast-top-right",
+				"preventDuplicates": false,
+				"onclick": null,
+				"showDuration": "300",	
+				"hideDuration": "1000",
+				"timeOut": "5000",
+				"extendedTimeOut": "1000",
+				"showEasing": "swing",
+				"hideEasing": "linear",
+				"showMethod": "fadeIn",
+				"hideMethod": "fadeOut"
+
+			}
+		var currentPage = 1;
+		var pageSize = 5; // Set your desired page s
+
 		// Load Data in Table when document is ready
 		$(document).ready(function () {
-			loadData();
-		});
-
+			loadData(currentPage, pageSize);
+			});
+		
 		// Load Data function
-		function loadData() {
-			debugger
+		function loadData(pageIndex, pageSize) {
+			
 			$.ajax({
 				url: '/Employee/GetAll',
 				type: 'GET',
+				data: { pageIndex: pageIndex, pageSize: pageSize },
+
 				success: function (result) {
 					var html = '';
 					$.each(result.data, function (key, item) {
+						debugger
+
 						html += '<tr>';
-						html += '<td>' + item.Id + '</td>';
-						html += '<td>' + item.Name + '</td>';
-						html += '<td>' + item.Salary + '</td>';
-						html += '<td>' + item.Department + '</td>';
-						html += '<td> <a href="#" class="btn btn-primary" onclick="return getbyID(' + item.Id + ')"> Edit </a> ' +
-							'<a href ="#" class="btn btn-danger" onclick ="ConfirmDelete(' + item.Id + ')"> Delete </a> ' +
+						html += '<td>' + item.id + '</td>';
+						html += '<td>' + item.name + '</td>';
+						html += '<td>' + item.salary + '</td>';
+						html += '<td>' + item.department + '</td>';
+						html += '<td> <a href="#" class="btn btn-primary" onclick="return getbyID(' + item.id + ')"> Edit </a> ' +
+							'<a href ="#" class="btn btn-danger" onclick ="ConfirmDelete(' + item.id + ')"> Delete </a> ' +
 							'</td>';
 						html += '</tr>';
 					});
 					$('.tbody').html(html);
+
+					// Update pagination controls
+					var totalRecords = result.totalRecords;
+					updatePaginationControls(pageIndex, pageSize, totalRecords);
 				},
 				error: function (errormessage) {
 					alert(errormessage.responseText);
 				}
 			});
 		}
+		// Update pagination controls
+		function updatePaginationControls(pageIndex, pageSize, totalRecords) {
+			var totalPages = Math.ceil(totalRecords / pageSize);
 
+			var paginationHtml = '';
+			for (var i = 1; i <= totalPages; i++) {
+				paginationHtml += `<li class="page-item ${i === pageIndex ? 'active' : ''}">
+									<a class="page-link" href="#" onclick="loadData(${i}, ${pageSize})">${i}</a>
+								   </li>`;
+			}
+
+			$('.pagination').html(paginationHtml);
+		}
+		function prevPage() {
+			if (currentPage > 1) {
+				currentPage--;
+				loadData(currentPage, pageSize);
+			}
+		}
+
+		function nextPage() {
+			var totalRecords = parseInt($('#totalRecords').val());
+
+			if (currentPage * pageSize < totalRecords) {
+				currentPage++;
+				loadData(currentPage, pageSize);
+			}
+		}
 		//Search employee using Name
 		function searchByName() {
 			var searchQuery = $('#searchName').val();
@@ -188,19 +237,26 @@
 				data: { name: searchQuery },
 				success: function (result) {
 					if (result.data.length === 0) {
-						$('#searchMessage').text("No results found for '" + searchQuery + "'.");
+						$('#searchMessage').text("Please Enter A Valid Name No, Results Found For '" + searchQuery + "'.");
 						$('.tbody').html(''); // Clear any previous search results
+
+						// Automatically refresh after 5 seconds
+						setTimeout(function () {
+							$('#searchMessage').text(""); // Clear message
+							$('#searchName').val(""); // Clear search input
+							loadData();// Function to load all data again
+						}, 5000);
 					} else {
 						$('#searchMessage').text(""); // Clear any previous message
 						var html = '';
 						$.each(result.data, function (key, item) {
-							html += '<tr>';
-							html += '<td>' + item.Id + '</td>';
-							html += '<td>' + item.Name + '</td>';
-							html += '<td>' + item.Salary + '</td>';
-							html += '<td>' + item.Department + '</td>';
-							html += '<td> <a href="#" class="btn btn-primary" onclick="return getbyID(' + item.Id + ')"> Edit </a> ' +
-								'<a href ="#" class="btn btn-danger" onclick ="ConfirmDelete(' + item.Id + ')"> Delete </a> ' +
+							html += '<tr>';	
+							html += '<td>' + item.id + '</td>';
+							html += '<td>' + item.name + '</td>';
+							html += '<td>' + item.salary + '</td>';
+							html += '<td>' + item.department + '</td>';
+							html += '<td> <a href="#" class="btn btn-primary" onclick="return getbyID(' + item.id + ')"> Edit </a> ' +
+								'<a href ="#" class="btn btn-danger" onclick ="ConfirmDelete(' + item.id + ')"> Delete </a> ' +
 								'</td>';
 							html += '</tr>';
 						});
@@ -212,22 +268,6 @@
 				}
 			});
 		}
-		// Show The Toast 
-		function showToast(message, type) {
-			var toastContainer = document.getElementById('toastContainer');
-			var toast = toastContainer.querySelector('.toast');
-
-			// Set toast message and type
-			var toastHeader = toast.querySelector('.toast-header strong');
-			var toastBody = toast.querySelector('.toast-body');
-			toastHeader.textContent = type;
-			toastBody.textContent = message;
-
-			// Show the toast
-			var toastInstance = new bootstrap.Toast(toast);
-			toastInstance.show();
-		}
-
 
 		// Add Employee Data Function
 		function AddEmployee(type) {
@@ -284,14 +324,8 @@
 					contentType: 'application/json',
 					data: JSON.stringify(employee),
 					success: function (result) {
-						loadData();
-
-						// $('#toastContainer .toast').toast('show');
-						// // Hide any other toast containers that may be open
-						// $('#updatetoastcontainer .toast').toast('hide');
-						// $('#deletetoastcontainer .toast').toast('hide');
-						// After successfully adding an employee
-						showToast("Employee has been added successfully.", "Employee Added");
+						loadData(currentPage, pageSize); 
+						toastr.success('Employee has been added successfully.');
 
 						$("#addEditEmployeeModal").modal("hide");
 					},
@@ -321,10 +355,10 @@
 				type: "GET",
 				contentType: 'application/json',
 				success: function (result) {
-					$('#Id').val(result.data.Id);
-					$('#Name').val(result.data.Name);
-					$('#Salary').val(result.data.Salary);
-					$('#Department').val(result.data.Department);
+					$('#Id').val(result.data.id);
+					$('#Name').val(result.data.name);
+					$('#Salary').val(result.data.salary);
+					$('#Department').val(result.data.department);
 
 					$('#addEditEmployeeModal').modal('show');
 
@@ -348,7 +382,7 @@
 				Id: $('#Id').val(),
 				Name: $('#Name').val(),
 				Salary: $('#Salary').val(),
-				Department: $('#Department').val(),
+				Department: $('#Department').val(),	
 			};
 			$.ajax({
 				url: '@Url.Action("UpdateEmployee", "Employee")',
@@ -356,21 +390,14 @@
 				contentType: 'application/json',
 				data: JSON.stringify(employee),
 				success: function (result) {
-					loadData();
-
+					loadData(currentPage, pageSize);
 					$('#addEditEmployeeModal').modal('hide');
-					// $('#updatetoastcontainer .toast').toast('show');
-					// // Hide any other toast containers that may be open
-					// $('#toastContainer .toast').toast('hide');
-					// $('#deletetoastcontainer .toast').toast('hide');
-					showToast("Employee has been updated successfully.", "Employee Updated");
+					toastr.success('Employee has been Update successfully.');
 
-
-					$('#Id').val("");
-					$('#Name').val("");
-					$('#Salary').val("");
-					$('#Department').val("");
-					
+					$('#id').val("");
+					$('#name').val("");
+					$('#salary').val("");
+					$('#department').val("");
 
 				},
 				error: function (errormessage) {
@@ -386,14 +413,14 @@
 				type: "GET",
 				contentType: 'application/json',
 				success: function (result) {
-					$("#labelToUpdateName").html("<b>Name: </b>" + result.data.Name);
-					$("#labelToUpdateDepartment").html("<b>Department: </b>" + result.data.Department);
-					$("#labelToUpdateSalary").html("<b>Salary: </b>" + result.data.Salary);
+					$("#labelToUpdateName").html("<b>Name: </b>" + result.data.name);
+					$("#labelToUpdateDepartment").html("<b>Department: </b>" + result.data.department);
+					$("#labelToUpdateSalary").html("<b>Salary: </b>" + result.data.salary);
 					$('#HiddenEmployeeId').val(EmpID);
 					$('#deleteConfirmationModal').modal('show');
 				},
 				error: function (errormessage) {
-					alert(errormessage.responseText);
+					toastr.error('Error fetching employee details: ' + errormessage.responseText);
 				}
 			});
 		}
@@ -406,17 +433,16 @@
 				type: 'POST',
 				contentType: 'application/json',
 				success: function (result) {
-					loadData();
-					$('#deleteConfirmationModal').modal('hide');
-					// // Show delete toast notification
-					// $('#deletetoastcontainer .toast').toast('show');
-					// $('#toastContainer .toast').toast('hide');
-					// $('#updatetoastcontainer .toast').toast('hide');
-					showToast("Employee has been Deleted successfully.", "Employee Deleted");
 
+					loadData(currentPage, pageSize);
+
+					$('#deleteConfirmationModal').modal('hide');
+					toastr.success('Employee has been Delete successfully.');	
+
+					//showToast("Employee has been Deleted successfully.", "Employee Deleted");
 				},
 				error: function (errormessage) {
-					alert(errormessage.responseText);
+					toastr.error('Error deleting employee: ' + errormessage.responseText);
 				}
 			});
 		}

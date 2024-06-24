@@ -4,6 +4,7 @@ using MVCAuth.Core.Services.Interface;
 using MVCAuth.Core.Services;
 using MVCAuth.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,29 +42,26 @@ builder.Services.AddAuthentication(options =>
     { 
         twitterOptions.ConsumerKey = builder.Configuration.GetSection("TwitterAuthSetting:ApiKey").Value;
         twitterOptions.ConsumerSecret = builder.Configuration.GetSection("TwitterAuthSetting:ApiSecret").Value;
-
         twitterOptions.CallbackPath = new PathString("/signin-twitter");
     });
 
 
 
-var connectionString = builder.Configuration.GetConnectionString("MVCAuthContextConnection") 
-    ?? throw new InvalidOperationException("Connection string 'MVCAuthContextConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("MVCAuthContextConnection")
+?? throw new InvalidOperationException("Connection string 'MVCAuthContextConnection' not found.");
 
 builder.Services.AddDbContext<MVCAuthContext>(options =>
        options.UseSqlServer(connectionString, b => b.MigrationsAssembly(typeof(MVCAuthContext).Assembly.FullName)));
 
+
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-       options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<MVCAuthContext>();
+       options.SignIn.RequireConfirmedAccount = false).AddEntityFrameworkStores<MVCAuthContext>();
 
 // Add services to the container.
-builder.Services.AddControllersWithViews()
-    .AddJsonOptions(options =>
-    {
-        // A property naming policy, or null to leave property names unchanged.
-        options.JsonSerializerOptions.PropertyNamingPolicy = null;
-    });
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();    
+builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IBookingServices, BookingServices>();
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();

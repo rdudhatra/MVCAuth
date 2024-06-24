@@ -6,34 +6,40 @@
 
 @* Showing The ServerSide Data Using DataTable *@
 <link href="~/lib/datatables/css/datatables.bootstrap4.min.css" rel="stylesheet" />
+<div id="loader">
+    <div class="spinner"></div>
+</div>
 
 <div class="container">
-    <h3 class="text-primary">Customers</h3>
-    <hr />
+    <br />
+    <div style="width:90%; margin:0 auto;">
+        <table id="Customers" class="table table-striped table-bordered dt-responsive nowrap" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Date Of Birth</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+@section Scripts
+{
+    <!-- Toastr CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 
-    <table id="Customers" class="table table-striped table-bordered dt-responsive nowrap">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Contact</th>
-                <th>Email</th>
-                <th>Date Of Birth</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-    </table>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-    @section Scripts
-    {
-        <script src="~/lib/datatables/js/jquery.datatables.min.js"></script>
-        <script src="~/lib/datatables/js/datatables.bootstrap4.min.js"></script>
-        <script src="~/js/customersdatatable.js"></script>
-     }
-
-
-
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/customersdatatable.js"></script>
+}
 
 
 

@@ -62,6 +62,29 @@ namespace MVCAuth.Controllers
                 throw;
             }
         }
+        // DELETE: api/customers/5
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCustomer(int id)
+        {
+            try
+            {
+                var customer = _context.Customers.Find(id);
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+
+                _context.Customers.Remove(customer);
+                _context.SaveChanges();
+
+                return Ok(new { message = "Customer deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
 
     }
 }

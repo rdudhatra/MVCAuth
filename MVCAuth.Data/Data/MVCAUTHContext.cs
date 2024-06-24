@@ -7,12 +7,18 @@ namespace MVCAuth.Data;
 
 public class MVCAuthContext : IdentityDbContext<IdentityUser>
 {
+    public MVCAuthContext()
+    {
+    }
+
     public MVCAuthContext(DbContextOptions<MVCAuthContext> options)
         : base(options)
     {
     }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<Customer> Customers { get; set; }
+    public virtual DbSet<Booking> Bookings { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

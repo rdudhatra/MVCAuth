@@ -5,6 +5,31 @@
     {
       "library": "datatables@1.10.21",
       "destination": "wwwroot/lib/datatables/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "bootstrap-datetimepicker@6.7.13",
+      "destination": "wwwroot/lib/bootstrap-datetimepicker/"
+    },
+    {
+      "library": "moment.js@2.29.4",
+      "destination": "wwwroot/lib/moment/"
+    },
+    {
+      "library": "jquery@3.7.0",
+      "provider": "cdnjs",
+      "destination": "wwwroot/lib/jquery/dist/"
+    },
+    {
+      "library": "jquery-ui-dist@1.13.2",
+      "provider": "jsdelivr",
+      "destination": "wwwroot/lib/jquery-ui-dist/dist/"
+    },
+
+    {
+      "provider": "cdnjs",
+      "library": "jqueryui@1.13.3",
+      "destination": "wwwroot/lib/jqueryui/"
     }
   ]
 }

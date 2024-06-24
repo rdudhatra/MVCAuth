@@ -27,10 +27,12 @@ namespace MVCAuth.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(int pageIndex = 1, int pageSize = 5)
         {
-            var employees = await _employeeService.GetAllEmployeesAsync();
-            return Json(new { data = employees });
+            var employees = await _employeeService.GetEmployeesPagedAsync(pageIndex, pageSize);
+            var totalRecords = await _employeeService.GetTotalEmployeeCountAsync();
+            //var employees = await _employeeService.GetAllEmployeesAsync();
+            return Json(new { data = employees, totalRecords});
         }
 
         [HttpGet]
@@ -67,5 +69,7 @@ namespace MVCAuth.Controllers
             var success = await _employeeService.DeleteEmployeeAsync(id);
             return Json(new { success });
         }
+
+
     }
 }

@@ -1,0 +1,328 @@
+﻿
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+
+        <h2>Calender</h2>
+        <div id="calender"></div>
+
+        <div id="myModal" class="modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Booking Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="pDetails"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="btnDelete" class="btn btn-danger float-right">Remove</button>
+                        <button id="btnEdit" class="btn btn-primary float-right mr-2">Edit</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="myModalSave" class="modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Save Booking</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="col-md-12 form-horizontal">
+                            <input type="hidden" id="hdBookingId" value="0" />
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <input type="text" id="txtSubject" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>Start</label>
+                                <div class="input-group date" id="dtp1">
+                                    <input type="text" id="txtStart" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" id="chkIsFullDay" checked="checked" />  Is Full Day event</label>
+                                </div>
+                            </div>
+                            <div class="form-group" id="divEndDate" style="display:none">
+                                <label>End</label>
+                                <div class="input-group date" id="dtp2">
+                                    <input type="text" id="txtEnd" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="txtDescription" rows="3" class="form-control"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Theme Color</label>
+                                <select id="ddThemeColor" class="form-control">
+                                    <option value="">Default</option>
+                                    <option value="red">Red</option>
+                                    <option value="blue">Blue</option>
+                                    <option value="black">Black</option>
+                                    <option value="green">Green</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="btnSave" class="btn btn-success float-right">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+@section Scripts {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+
+        $(document).ready(function () {
+            var events = [];
+            var selectedEvent = null;
+            FetchEventAndRenderCalendar();
+            function FetchEventAndRenderCalendar() {
+                events = [];
+                $.ajax({
+                    type: "GET",
+                    url: "/booking/GetBookings",
+                    success: function (data) {
+                        $.each(data, function (i, r) {
+                            events.push({
+                                bookingId: r.bookingId,
+                                title: r.subject,
+                                description: r.description,
+                                start: moment(r.start),
+                                end: r.end != null ? moment(r.end) : null,
+                                color: r.themeColor,
+                                allDay: r.isFullDay
+                            });
+                        })
+
+                        GenerateCalender(events);
+                    },
+                    error: function (error) {
+                        toastr.error('Failed to fetch bookings.');
+                    }
+                })
+            }
+
+            function GenerateCalender(events) {
+                $('#calender').fullCalendar('destroy');
+                $('#calender').fullCalendar({
+                    contentHeight: 400,
+                    defaultDate: new Date(),
+                    timeFormat: 'h(:mm)a',
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'month,basicWeek,basicDay,agenda'
+                    },
+                    eventLimit: true,
+                    eventColor: '#378006',
+                    events: events,
+                    eventClick: function (calEvent, jsEvent, view) {
+                        selectedEvent = calEvent;
+                        $('#myModal #eventTitle').text(calEvent.title);
+                        var $description = $('<div/>');
+                        $description.append($('<p/>').html('<b>Start:</b>' + calEvent.start.format("DD-MMM-YYYY HH:mm a")));
+                        if (calEvent.end != null) {
+                            $description.append($('<p/>').html('<b>End:</b>' + calEvent.end.format("DD-MMM-YYYY HH:mm a")));
+                        }
+                        $description.append($('<p/>').html('<b>Description:</b>' + calEvent.description));
+                        $('#myModal #pDetails').empty().html($description);
+
+                        $('#myModal').modal('show');
+                    },
+                    selectable: true,
+                    select: function (start, end) {
+                        selectedEvent = {
+                            bookingId: 0,
+                            title: '',
+                            description: '',
+                            start: start,
+                            end: end,
+                            allDay: false,
+                            color: ''
+                        };
+                        openAddEditForm();
+                        $('#calendar').fullCalendar('unselect');
+                    },
+                    editable: true,
+                    eventDrop: function (event) {
+                        var data = {
+                            BookingID: event.bookingId,
+                            Subject: event.title,
+                            Start: event.start.format('DD/MM/YYYY HH:mm A'),
+                            End: event.end != null ? event.end.format('DD/MM/YYYY HH:mm A') : null,
+                            Description: event.description,
+                            ThemeColor: event.color,
+                            IsFullDay: event.allDay
+                        };
+                        SaveBooking(data);
+                    }
+                })
+            }
+
+            $('#btnEdit').click(function () {
+                //Open modal dialog for edit event
+                openAddEditForm();
+            })
+
+            $('#btnDelete').click(function () {
+                if (selectedEvent != null && confirm('Are you sure?')) {
+                    $.ajax({
+                        type: "POST",
+                        url: '/booking/DeleteEvent',
+                        data: { 'bookingId': selectedEvent.bookingId },
+                        success: function (result) {
+                            if (result) {
+                                //Refresh the calender
+                                FetchEventAndRenderCalendar();
+                                $('#myModal').modal('hide');
+                                toastr.success('Booking deleted successfully!');
+
+                            }   
+                            else {
+                                toastr.error('Failed to delete booking.');
+                            }
+                        },
+                        error: function () {
+                            toastr.error('Failed to delete booking.');
+                        }
+                    })
+                }
+            })
+
+            $('#dtp1,#dtp2').datetimepicker({
+                format: 'DD/MM/YYYY HH:mm A'
+            });
+
+            $('#chkIsFullDay').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#divEndDate').hide();
+                }
+                else {
+                    $('#divEndDate').show();
+                }
+            });
+
+            function openAddEditForm() {
+                if (selectedEvent != null) {
+                    $('#hdBookingId').val(selectedEvent.bookingId);
+                    $('#txtSubject').val(selectedEvent.title);
+                    $('#txtStart').val(selectedEvent.start.format('DD/MM/YYYY HH:mm A'));
+                    $('#chkIsFullDay').prop("checked", selectedEvent.allDay || false);
+                    $('#chkIsFullDay').change();
+                    $('#txtEnd').val(selectedEvent.end != null ? selectedEvent.end.format('DD/MM/YYYY HH:mm A') : '');
+                    $('#txtDescription').val(selectedEvent.description);
+                    $('#ddThemeColor').val(selectedEvent.color);
+                }
+                $('#myModal').modal('hide');
+                $('#myModalSave').modal('show');
+            }
+
+            $('#btnSave').click(function () {
+                //Validation/
+                if ($('#txtSubject').val().trim() == "") {
+                    alert('Subject required');
+                    return;
+                }
+                if ($('#txtStart').val().trim() == "") {
+                    alert('Start date required');
+                    return;
+                }
+                if ($('#chkIsFullDay').is(':checked') == false && $('#txtEnd').val().trim() == "") {
+                    alert('End date required');
+                    return;
+                }
+                else {
+                    var startDate = moment($('#txtStart').val(), "DD/MM/YYYY HH:mm A").toDate();
+                    var endDate = moment($('#txtEnd').val(), "DD/MM/YYYY HH:mm A").toDate();
+                    if (startDate > endDate) {
+                        alert('Invalid end date');
+                        return;
+                    }
+                }
+
+                var data = {
+                    BookingId: $('#hdBookingId').val(),
+                    Subject: $('#txtSubject').val().trim(),
+                    Start: $('#txtStart').val().trim(),
+                    End: $('#chkIsFullDay').is(':checked') ? null : $('#txtEnd').val().trim(),
+                    Description: $('#txtDescription').val(),
+                    ThemeColor: $('#ddThemeColor').val(),
+                    IsFullDay: $('#chkIsFullDay').is(':checked')
+                }
+                SaveBooking(data);
+                // call function for submit data to the server
+            })
+
+            function SaveBooking(data) {
+                var isNewBooking = data.BookingId == 0;
+                $.ajax({
+                    type: "POST",
+                    url: '/booking/SaveBooking',
+                    data: data,
+                    success: function (result) {
+                        if (result) {
+                            // Refresh the calendar
+                            FetchEventAndRenderCalendar();
+                            $('#myModalSave').modal('hide');
+                            if (isNewBooking) {
+                                toastr.success('Booking saved successfully!');
+                            } else {
+                                toastr.success('Booking updated successfully!');
+                            }
+                        } else {
+                            toastr.error('Failed to save booking.');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Failed to save booking.');
+                    }
+                });
+            }
+    
+        })
+    </script>
+}
+
+
+
+
