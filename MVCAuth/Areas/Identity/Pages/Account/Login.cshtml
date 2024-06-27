@@ -11,7 +11,7 @@
     <div class="col-10">
         <section>
             <form id="account" method="post">
-                <h2>Welcome Back!...</h2>
+                <h3 class ="centered-links">Welcome Back !</h3>
                 <hr />
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                 <div class="form-floating mb-3">
@@ -40,7 +40,7 @@
 </div>
 <br/>
 <section class="centered-links">
-            <h3>Login With!...</h3>
+    <h3>Sign in with</h3>
             <hr />
             @{
                 if ((Model.ExternalLogins?.Count ?? 0) == 0)
@@ -54,26 +54,49 @@
                 }
                 else
                 {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
+            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                <div>
+                    <p>
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            <button type="submit" class="btn btn-secondary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account" style="background-color: white;">
+                                @switch (provider.Name)
                                 {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                    case "Google":
+                                        <i class="fab fa-google fa-lg" style="color: #DB4437;"></i>
+                                        break;
+                                    case "Facebook":
+                                        <i class="fab fa-facebook fa-lg" style="color: #1877F2;"></i>
+                                        break;
+                                    case "Twitter":
+                                        <i class="fab fa-twitter fa-lg" style="color: #1DA1F2;"></i>
+                                        break;
+                                    case "GitHub":
+                                        <i class="fab fa-github fa-lg" style="color: #333;"></i>
+                                        break;
+                                    default:
+                                        @provider.DisplayName
+                                        break;
                                 }
-                            </p>
-                        </div>
-                    </form>
+                            </button>
+                        }
+                    </p>
+                </div>
+            </form>
+
+
+
                 }
             }
         </section>
 <div class="centered-links">
     <p>
-        <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
+        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Don't have an account ? Signup now</a>
     </p>
     <p>
-        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a new user</a>
+        <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a>
     </p>
+
     <p>
         <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a>
     </p>

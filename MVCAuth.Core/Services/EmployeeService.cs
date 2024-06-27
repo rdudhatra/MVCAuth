@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MVCAuth.Core.Services.Interface;
+using MVCAuth.Core.Wrapper;
 using MVCAuth.Data;
 using MVCAuth.Data.Models;
 using System;
@@ -20,10 +21,6 @@ namespace MVCAuth.Core.Services
             _context = context;
         }
 
-        //public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
-        //{
-        //    return await _context.Employees.ToListAsync();
-        //}
 
         public async Task<Employee> GetEmployeeByIdAsync(int id)
         {
@@ -70,19 +67,19 @@ namespace MVCAuth.Core.Services
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<IEnumerable<Employee>> GetEmployeesPagedAsync(int pageIndex, int pageSize)
-{
-    return await _context.Employees
-        .Skip((pageIndex - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync();
-}
+   
+        public async Task<PaginatedResult<Employee>> GetPagedEmployeesAsync(int pageIndex, int pageSize)
+        {
+            var totalRecords = await _context.Employees.CountAsync();
+            var employees = await _context.Employees
+                .OrderBy(e => e.Id)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-public async Task<int> GetTotalEmployeeCountAsync()
-{
-    return await _context.Employees.CountAsync();
-}
+            return new PaginatedResult<Employee>(employees, totalRecords, pageIndex, pageSize);
+        }
 
-	
-	}
+
+    }
 }

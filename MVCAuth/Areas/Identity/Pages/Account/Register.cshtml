@@ -8,7 +8,7 @@
 
 
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
+    <h3 class="centered-links">Register Account</h3>
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             <div class="form-floating mb-3">
@@ -30,7 +30,7 @@
         </form>
         <br/>
 <section class="centered-links">
-            <h3> Register With!...</h3>
+    <h3> Sign up using  </h3>
             <hr />
             @{
                 if ((Model.ExternalLogins?.Count ?? 0) == 0)
@@ -44,21 +44,48 @@
                 }
                 else
                 {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
+            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                <div>
+                    <p>
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            <button type="submit" class="btn btn-secondary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account" style="background-color: white;">
+                                @switch (provider.Name)
                                 {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                    case "Google":
+                                        <i class="fab fa-google" style="color: #DB4437;"></i>
+                                        break;
+                                    case "Facebook":
+                                        <i class="fab fa-facebook" style="color: #1877F2;"></i>
+                                        break;
+                                    case "Twitter":
+                                        <i class="fab fa-twitter" style="color: #1DA1F2;"></i>
+                                        break;
+                                    case "GitHub":
+                                        <i class="fab fa-github" style="color: #333;"></i>
+                                        break;
+                                    default:
+                                        @provider.DisplayName
+                                        break;
                                 }
-                            </p>
-                        </div>
-                    </form>
+                            </button>
+                        }
+                    </p>
+                </div>
+            </form>
+
                 }
             }
         </section>
 
-
+<div class="centered-links">
+   
+    <p>
+        <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Already have an account ? Login </a>
+    </p>
+   
+</div>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
 }
